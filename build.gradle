@@ -1053,8 +1053,8 @@ project(':core') {
     from(project(':connect:mirror-client').configurations.runtimeClasspath) { into("libs/") }
     from(project(':streams').jar) { into("libs/") }
     from(project(':streams').configurations.runtimeClasspath) { into("libs/") }
-    from(project(':streams:streams-scala').jar) { into("libs/") }
-    from(project(':streams:streams-scala').configurations.runtimeClasspath) { into("libs/") }
+//    from(project(':streams:streams-scala').jar) { into("libs/") }
+//    from(project(':streams:streams-scala').configurations.runtimeClasspath) { into("libs/") }
     from(project(':streams:test-utils').jar) { into("libs/") }
     from(project(':streams:test-utils').configurations.runtimeClasspath) { into("libs/") }
     from(project(':streams:examples').jar) { into("libs/") }
@@ -1587,6 +1587,10 @@ project(':storage') {
     useJUnitPlatform {
       includeEngines 'junit-jupiter'
     }
+
+    filter {
+      includeTestsMatching "org.apache.kafka.server.log.remote.storage.RemoteLogManagerConfigTest"
+    }
   }
 
   clean.doFirst {
@@ -1689,6 +1693,12 @@ project(':trogdor') {
 
   jar {
     dependsOn 'copyDependantLibs'
+  }
+
+  test {
+    filter {
+      includeTestsMatching "org.apache.kafka.trogdor.basic.*"
+    }
   }
 }
 
@@ -1848,67 +1858,63 @@ project(':streams') {
     dependsOn: [
             ':streams:test',
             ':streams:test-utils:test',
-            ':streams:streams-scala:test',
-            ':streams:upgrade-system-tests-0100:test',
-            ':streams:upgrade-system-tests-0101:test',
-            ':streams:upgrade-system-tests-0102:test',
-            ':streams:upgrade-system-tests-0110:test',
-            ':streams:upgrade-system-tests-10:test',
-            ':streams:upgrade-system-tests-11:test',
-            ':streams:upgrade-system-tests-20:test',
-            ':streams:upgrade-system-tests-21:test',
-            ':streams:upgrade-system-tests-22:test',
-            ':streams:upgrade-system-tests-23:test',
-            ':streams:upgrade-system-tests-24:test',
-            ':streams:upgrade-system-tests-25:test',
-            ':streams:upgrade-system-tests-26:test',
-            ':streams:upgrade-system-tests-27:test',
-            ':streams:upgrade-system-tests-28:test',
-            ':streams:upgrade-system-tests-30:test',
+//            ':streams:streams-scala:test',
             ':streams:examples:test'
     ]
   )
-}
 
-project(':streams:streams-scala') {
-  apply plugin: 'scala'
-  archivesBaseName = "kafka-streams-scala_${versions.baseScala}"
-  dependencies {
-    api project(':streams')
-
-    api libs.scalaLibrary
-    api libs.scalaCollectionCompat
-
-    testImplementation project(':core')
-    testImplementation project(':core').sourceSets.test.output
-    testImplementation project(':streams').sourceSets.test.output
-    testImplementation project(':clients').sourceSets.test.output
-    testImplementation project(':streams:test-utils')
-
-    testImplementation libs.junitJupiter
-    testImplementation libs.easymock
-    testImplementation libs.hamcrest
-    testRuntimeOnly libs.slf4jlog4j
-  }
-
-  javadoc {
-    include "**/org/apache/kafka/streams/scala/**"
-  }
-
-  tasks.create(name: "copyDependantLibs", type: Copy) {
-    from (configurations.runtimeClasspath) {
-      exclude('kafka-streams*')
+  test {
+    filter {
+      includeTestsMatching "org.apache.kafka.streams.tools.*"
     }
-    into "$buildDir/dependant-libs-${versions.scala}"
-    duplicatesStrategy 'exclude'
   }
-
-  jar {
-    dependsOn 'copyDependantLibs'
-  }
-
-  test.dependsOn(':spotlessScalaCheck')
 }
+
+//project(':streams:streams-scala') {
+//  apply plugin: 'scala'
+//  archivesBaseName = "kafka-streams-scala_${versions.baseScala}"
+//  dependencies {
+//    api project(':streams')
+//
+//    api libs.scalaLibrary
+//    api libs.scalaCollectionCompat
+//
+//    testImplementation project(':core')
+//    testImplementation project(':core').sourceSets.test.output
+//    testImplementation project(':streams').sourceSets.test.output
+//    testImplementation project(':clients').sourceSets.test.output
+//    testImplementation project(':streams:test-utils')
+//
+//    testImplementation libs.junitJupiter
+//    testImplementation libs.easymock
+//    testImplementation libs.hamcrest
+//    testRuntimeOnly libs.slf4jlog4j
+//  }
+//
+//  javadoc {
+//    include "**/org/apache/kafka/streams/scala/**"
+//  }
+//
+//  tasks.create(name: "copyDependantLibs", type: Copy) {
+//    from (configurations.runtimeClasspath) {
+//      exclude('kafka-streams*')
+//    }
+//    into "$buildDir/dependant-libs-${versions.scala}"
+//    duplicatesStrategy 'exclude'
+//  }
+//
+//  jar {
+//    dependsOn 'copyDependantLibs'
+//  }
+//
+//  test.dependsOn(':spotlessScalaCheck')
+//
+//  test {
+//    filter {
+//      includeTestsMatching "org.apache.kafka.streams.scala.*"
+//    }
+//  }
+//}
 
 project(':streams:test-utils') {
   archivesBaseName = "kafka-streams-test-utils"
@@ -1943,6 +1949,11 @@ project(':streams:test-utils') {
     dependsOn 'copyDependantLibs'
   }
 
+  test {
+    filter {
+      includeTestsMatching "org.apache.kafka.streams.MockTimeTest"
+    }
+  }
 }
 
 project(':streams:examples') {
@@ -1980,219 +1991,11 @@ project(':streams:examples') {
   jar {
     dependsOn 'copyDependantLibs'
   }
-}
 
-project(':streams:upgrade-system-tests-0100') {
-  archivesBaseName = "kafka-streams-upgrade-system-tests-0100"
-
-  dependencies {
-    testImplementation(libs.kafkaStreams_0100) {
-      exclude group: 'org.slf4j', module: 'slf4j-log4j12'
-      exclude group: 'log4j', module: 'log4j'
+  test {
+    filter {
+      includeTestsMatching "org.apache.kafka.streams.examples.wordcount.WordCountDemoTest"
     }
-    testRuntimeOnly libs.junitJupiter
-  }
-
-  systemTestLibs {
-    dependsOn testJar
-  }
-}
-
-project(':streams:upgrade-system-tests-0101') {
-  archivesBaseName = "kafka-streams-upgrade-system-tests-0101"
-
-  dependencies {
-    testImplementation(libs.kafkaStreams_0101) {
-      exclude group: 'org.slf4j', module: 'slf4j-log4j12'
-      exclude group: 'log4j', module: 'log4j'
-    }
-    testRuntimeOnly libs.junitJupiter
-  }
-
-  systemTestLibs {
-    dependsOn testJar
-  }
-}
-
-project(':streams:upgrade-system-tests-0102') {
-  archivesBaseName = "kafka-streams-upgrade-system-tests-0102"
-
-  dependencies {
-    testImplementation libs.kafkaStreams_0102
-    testRuntimeOnly libs.junitJupiter
-  }
-
-  systemTestLibs {
-    dependsOn testJar
-  }
-}
-
-project(':streams:upgrade-system-tests-0110') {
-  archivesBaseName = "kafka-streams-upgrade-system-tests-0110"
-
-  dependencies {
-    testImplementation libs.kafkaStreams_0110
-    testRuntimeOnly libs.junitJupiter
-  }
-
-  systemTestLibs {
-    dependsOn testJar
-  }
-}
-
-project(':streams:upgrade-system-tests-10') {
-  archivesBaseName = "kafka-streams-upgrade-system-tests-10"
-
-  dependencies {
-    testImplementation libs.kafkaStreams_10
-    testRuntimeOnly libs.junitJupiter
-  }
-
-  systemTestLibs {
-    dependsOn testJar
-  }
-}
-
-project(':streams:upgrade-system-tests-11') {
-  archivesBaseName = "kafka-streams-upgrade-system-tests-11"
-
-  dependencies {
-    testImplementation libs.kafkaStreams_11
-    testRuntimeOnly libs.junitJupiter
-  }
-
-  systemTestLibs {
-    dependsOn testJar
-  }
-}
-
-project(':streams:upgrade-system-tests-20') {
-  archivesBaseName = "kafka-streams-upgrade-system-tests-20"
-
-  dependencies {
-    testImplementation libs.kafkaStreams_20
-    testRuntimeOnly libs.junitJupiter
-  }
-
-  systemTestLibs {
-    dependsOn testJar
-  }
-}
-
-project(':streams:upgrade-system-tests-21') {
-  archivesBaseName = "kafka-streams-upgrade-system-tests-21"
-
-  dependencies {
-    testImplementation libs.kafkaStreams_21
-    testRuntimeOnly libs.junitJupiter
-  }
-
-  systemTestLibs {
-    dependsOn testJar
-  }
-}
-
-project(':streams:upgrade-system-tests-22') {
-  archivesBaseName = "kafka-streams-upgrade-system-tests-22"
-
-  dependencies {
-    testImplementation libs.kafkaStreams_22
-    testRuntimeOnly libs.junitJupiter
-  }
-
-  systemTestLibs {
-    dependsOn testJar
-  }
-}
-
-project(':streams:upgrade-system-tests-23') {
-  archivesBaseName = "kafka-streams-upgrade-system-tests-23"
-
-  dependencies {
-    testImplementation libs.kafkaStreams_23
-    testRuntimeOnly libs.junitJupiter
-  }
-
-  systemTestLibs {
-    dependsOn testJar
-  }
-}
-
-project(':streams:upgrade-system-tests-24') {
-  archivesBaseName = "kafka-streams-upgrade-system-tests-24"
-
-  dependencies {
-    testImplementation libs.kafkaStreams_24
-    testRuntimeOnly libs.junitJupiter
-  }
-
-  systemTestLibs {
-    dependsOn testJar
-  }
-}
-
-project(':streams:upgrade-system-tests-25') {
-  archivesBaseName = "kafka-streams-upgrade-system-tests-25"
-
-  dependencies {
-    testImplementation libs.kafkaStreams_25
-    testRuntimeOnly libs.junitJupiter
-  }
-
-  systemTestLibs {
-    dependsOn testJar
-  }
-}
-
-project(':streams:upgrade-system-tests-26') {
-  archivesBaseName = "kafka-streams-upgrade-system-tests-26"
-
-  dependencies {
-    testImplementation libs.kafkaStreams_26
-    testRuntimeOnly libs.junitJupiter
-  }
-
-  systemTestLibs {
-    dependsOn testJar
-  }
-}
-
-project(':streams:upgrade-system-tests-27') {
-  archivesBaseName = "kafka-streams-upgrade-system-tests-27"
-
-  dependencies {
-    testImplementation libs.kafkaStreams_27
-    testRuntimeOnly libs.junitJupiter
-  }
-
-  systemTestLibs {
-    dependsOn testJar
-  }
-}
-
-project(':streams:upgrade-system-tests-28') {
-  archivesBaseName = "kafka-streams-upgrade-system-tests-28"
-
-  dependencies {
-    testImplementation libs.kafkaStreams_28
-    testRuntimeOnly libs.junitJupiter
-  }
-
-  systemTestLibs {
-    dependsOn testJar
-  }
-}
-
-project(':streams:upgrade-system-tests-30') {
-  archivesBaseName = "kafka-streams-upgrade-system-tests-30"
-
-  dependencies {
-    testImplementation libs.kafkaStreams_30
-    testRuntimeOnly libs.junitJupiter
-  }
-
-  systemTestLibs {
-    dependsOn testJar
   }
 }
 

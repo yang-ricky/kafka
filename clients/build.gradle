@@ -13,29 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-include 'clients',
-    'connect:api',
-    'connect:basic-auth-extension',
-    'connect:file',
-    'connect:json',
-    'connect:mirror',
-    'connect:mirror-client',
-    'connect:runtime',
-    'connect:transforms',
-    'core',
-    'examples',
-    'generator',
-    'jmh-benchmarks',
-    'log4j-appender',
-    'metadata',
-    'raft',
-    'server-common',
-    'shell',
-    'storage',
-    'storage:api',
-    'streams',
-    'streams:examples',
-//    'streams:streams-scala',
-    'streams:test-utils',
-    'tools',
-    'trogdor'
+test {
+    // Ricky备注: 排除一些单元测试，因为耗时很长
+    filter {
+        includeTestsMatching "org.apache.kafka.common.cache.*"
+    }
+}
